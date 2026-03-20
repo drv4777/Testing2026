@@ -1,33 +1,44 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// Import your models (Ensure these files exist in your models folder)
-const User = require('../models/user'); 
+const User = require('../models/user');
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
+// Register a new user
 exports.register = async (req, res) => {
     const { username, password } = req.body;
     try {
-        // DEFECT CHECK: README mentions "Insecure password storage"
-        // Fix: Hash the password before saving to PostgreSQL/MongoDB
+        // 1. Check if user already exists
+        let user = await User.findOne({ username });
+        if (user) return res.status(400).json({ error: "User already exists" });
+
+        // 2. Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Logic to save user to database goes here
+        // 3. Save to MongoDB
+        user = new User({ username, password: hashedPassword });
+        await user.save();
+
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Registration failed" });
     }
 };
 
-// @desc    Authenticate user & get token
-// @route   POST /api/auth/login
+// Authenticate user & get token
 exports.login = async (req, res) => {
     const { username, password } = req.body;
     try {
-        // Logic to find user and compare passwords goes here
-        // If successful, generate a JWT [cite: 153]
-        const token = jwt.sign({ id: username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // 1. Find user
+        const user = await User.findOne({ username });
+        if (!user) return res.status(400).json({ error: "Invalid credentials" });
+
+        // 2. Compare passwords
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+
+        // 3. Generate JWT
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ token });
     } catch (error) {
