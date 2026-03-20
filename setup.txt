@@ -1,0 +1,8 @@
+1.  Install Node.js and npm.
+2.  Install MongoDB and PostgreSQL.
+3.  Create a MongoDB database named "payment_gateway".
+4.  Create a PostgreSQL database named "payment_gateway".
+5.  Configure the database connection strings in `backend/config/db.js`.
+6.  Install the required npm packages in both the `backend` and `frontend` directories using `npm install`.
+7.  Set environment variables for JWT secret, payment provider API keys, and other sensitive information in the backend.
+8.  Run database migrations or seed data if necessary.
