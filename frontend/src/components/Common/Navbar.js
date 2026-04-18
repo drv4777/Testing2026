@@ -33,6 +33,9 @@ function Navbar() {
               <Link to="/analytics">Analytics</Link>
             </li>
             <li>
+              <Link to="/settings">Settings</Link>
+            </li>
+            <li>
               <button onClick={handleLogout}>Logout</button>
             </li>
           </>

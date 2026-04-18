@@ -7,6 +7,7 @@ import TransactionHistory from './components/Payment/TransactionHistory';
 import MerchantManagement from './components/Admin/MerchantManagement';
 import Analytics from './components/Admin/Analytics';
 import Navbar from './components/Common/Navbar';
+import Settings from './components/Common/Settings';
 import { useSelector } from 'react-redux';
 import './styles/global.css';
 
@@ -31,6 +32,7 @@ function App() {
         <PrivateRoute path="/history" component={TransactionHistory} />
         <PrivateRoute path="/merchants" component={MerchantManagement} />
         <PrivateRoute path="/analytics" component={Analytics} />
+        <PrivateRoute path="/settings" component={Settings} />
         <Route path="/" render={() => <Redirect to={isAuthenticated ? "/payment" : "/login"} />} />
       </Switch>
     </Router>

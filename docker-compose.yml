@@ -18,7 +18,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d payment_gateway"]
+      test: [ "CMD-SHELL", "pg_isready -U user -d payment_gateway" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,16 +28,15 @@ services:
   mongodb:
     image: mongo:latest
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 5s
       timeout: 5s
       retries: 5
     ports:
       - "27017:27017"
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend

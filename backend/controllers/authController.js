@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Merchant = require('../models/merchant');
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -58,5 +59,29 @@ exports.login = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
+    }
+};
+
+// Get current account details for Settings page
+exports.getCurrentAccount = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('username email role twoFactorEnabled status createdAt updatedAt');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        let merchant = null;
+        if (user.role === 'merchant') {
+            merchant = await Merchant.findOne({ ownerUserId: user._id })
+                .select('_id name apiKey webhookUrl status')
+                .lean();
+        }
+
+        res.status(200).json({
+            user,
+            merchant,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch account details' });
     }
 };
