@@ -7,6 +7,11 @@ function normalizeCardNumber(cardNumber) {
   return String(cardNumber || '').replace(/\s|-/g, '');
 }
 
+function isValidManualCardNumberFormat(cardNumber) {
+  const normalized = normalizeCardNumber(cardNumber);
+  return /^\d{13,19}$/.test(normalized);
+}
+
 function isCardExpired(testCard) {
   const now = new Date();
   return testCard.status === 'expired'
@@ -27,6 +32,35 @@ exports.processPayment = async (req, res) => {
       expYear,
       cvv,
     } = req.body;
+
+    const missingFields = [];
+    if (amount === undefined || amount === null || Number(amount) <= 0) {
+      missingFields.push('amount');
+    }
+    if (!currency) {
+      missingFields.push('currency');
+    }
+    if (!merchantId) {
+      missingFields.push('merchant');
+    }
+
+    if (paymentMethod === 'card') {
+      const usingManualCardEntry = Boolean(cardNumber || expMonth || expYear || cvv);
+      if (usingManualCardEntry) {
+        if (!cardNumber || !expMonth || !expYear || !cvv) {
+          missingFields.push('card details');
+        }
+      } else if (!cardToken) {
+        missingFields.push('card details');
+      }
+    }
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: `Please fill out required fields: ${[...new Set(missingFields)].join(', ')}`,
+      });
+    }
+
     const merchant = await Merchant.findById(merchantId);
     if (!merchant) {
       return res.status(400).json({ message: 'Merchant not found' });
@@ -50,17 +84,21 @@ exports.processPayment = async (req, res) => {
           return res.status(400).json({ message: 'cardNumber, expMonth, expYear, and cvv are required for manual card entry' });
         }
 
+        if (!isValidManualCardNumberFormat(cardNumber)) {
+          return res.status(400).json({ message: 'Card number must contain digits only and be between 13 and 19 digits' });
+        }
+
         testCard = await TestCard.findOne({ cardNumber: normalizeCardNumber(cardNumber) });
         if (!testCard) {
-          return res.status(404).json({ message: 'Test card not found' });
+          return res.status(404).json({ message: 'Cannot find a card with those details' });
         }
 
         if (String(testCard.cvv) !== String(cvv).trim()) {
-          return res.status(402).json({ message: 'Card declined: CVV does not match', issuerDecision: { source: 'mock-issuer', approved: false, reason: 'cvv_mismatch' } });
+          return res.status(404).json({ message: 'Cannot find a card with those details' });
         }
 
         if (Number(expMonth) !== Number(testCard.expMonth) || Number(expYear) !== Number(testCard.expYear)) {
-          return res.status(402).json({ message: 'Card declined: expiry date does not match', issuerDecision: { source: 'mock-issuer', approved: false, reason: 'expiry_mismatch' } });
+          return res.status(404).json({ message: 'Cannot find a card with those details' });
         }
       } else {
         if (!cardToken) {

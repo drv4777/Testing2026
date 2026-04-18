@@ -55,6 +55,14 @@ const TEST_CARDS = [
   },
 ];
 
+function formatCardNumberInput(value) {
+  const digitsOnly = String(value || '')
+    .replace(/\D/g, '')
+    .slice(0, 19);
+
+  return digitsOnly.match(/.{1,4}/g)?.join(' ') || '';
+}
+
 function PaymentForm() {
   const [amount, setAmount] = useState('');
   const [merchantId, setMerchantId] = useState('');
@@ -67,6 +75,7 @@ function PaymentForm() {
   const [expMonth, setExpMonth] = useState('12');
   const [expYear, setExpYear] = useState('2030');
   const [cvv, setCvv] = useState('123');
+  const [clientValidationError, setClientValidationError] = useState('');
 
   const merchants = useSelector((state) => state.admin.merchants);
   const merchantsLoading = useSelector((state) => state.admin.merchantsLoading);
@@ -93,9 +102,34 @@ function PaymentForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const parsedAmount = Number(amount);
-    if (!parsedAmount || parsedAmount <= 0 || !merchantId) {
+
+    const missing = [];
+    if (!parsedAmount || parsedAmount <= 0) {
+      missing.push('amount');
+    }
+    if (!currency) {
+      missing.push('currency');
+    }
+    if (!merchantId) {
+      missing.push('merchant');
+    }
+
+    if (paymentMethod === 'card') {
+      if (manualCardEntry) {
+        if (!cardNumber || !expMonth || !expYear || !cvv) {
+          missing.push('card details');
+        }
+      } else if (!cardToken) {
+        missing.push('card details');
+      }
+    }
+
+    if (missing.length > 0) {
+      setClientValidationError(`Please fill out required fields: ${[...new Set(missing)].join(', ')}`);
       return;
     }
+
+    setClientValidationError('');
 
     dispatch(
       processPayment(
@@ -212,9 +246,11 @@ function PaymentForm() {
                     type="text"
                     inputMode="numeric"
                     autoComplete="cc-number"
+                    pattern="[0-9\s-]*"
+                    title="Use digits only. Spaces and hyphens are allowed."
                     placeholder="4242 4242 4242 4242"
                     value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
+                    onChange={(e) => setCardNumber(formatCardNumberInput(e.target.value))}
                   />
 
                   <div className="manual-card-inline-grid">
@@ -258,6 +294,7 @@ function PaymentForm() {
                   </div>
 
                   <p className="form-hint">Use the seeded mock card details only. The backend will validate number, expiry, and CVV against the test issuer database.</p>
+                  <p className="form-hint">Card numbers must be digits only. Spaces and hyphens are allowed while typing.</p>
                 </div>
               )}
 
@@ -294,6 +331,7 @@ function PaymentForm() {
           )}
 
           {merchantError && <p className="form-error">Unable to load merchants: {merchantError}</p>}
+          {clientValidationError && <p className="form-error">{clientValidationError}</p>}
           {paymentError && <p className="form-error">Payment failed: {paymentError}</p>}
 
           <button type="submit" disabled={processing || merchantsLoading || activeMerchants.length === 0}>
