@@ -6,10 +6,30 @@ export const PROCESS_PAYMENT_FAILURE = 'PROCESS_PAYMENT_FAILURE';
 export const GET_TRANSACTION_HISTORY_SUCCESS = 'GET_TRANSACTION_HISTORY_SUCCESS';
 export const GET_TRANSACTION_HISTORY_FAILURE = 'GET_TRANSACTION_HISTORY_FAILURE';
 
-export const processPayment = (amount, merchantId, paymentMethod, currency = 'USD') => async (dispatch) => {
+export const processPayment = (
+  amount,
+  merchantId,
+  paymentMethod,
+  currency = 'USD',
+  cardToken = '',
+  cardNumber = '',
+  expMonth = '',
+  expYear = '',
+  cvv = ''
+) => async (dispatch) => {
   try {
     dispatch({ type: PROCESS_PAYMENT_REQUEST });
-    const response = await api.post('/payment/process', { amount, merchantId, paymentMethod, currency });
+    const response = await api.post('/payment/process', {
+      amount,
+      merchantId,
+      paymentMethod,
+      currency,
+      cardToken,
+      cardNumber,
+      expMonth,
+      expYear,
+      cvv,
+    });
     dispatch({
       type: PROCESS_PAYMENT_SUCCESS,
       payload: response.data.transaction,

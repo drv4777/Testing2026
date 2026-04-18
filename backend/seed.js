@@ -9,6 +9,7 @@ const Merchant = require('./models/merchant');
 const Transaction = require('./models/transaction');
 const FraudAlert = require('./models/fraudAlert');
 const AuditLog = require('./models/auditLog');
+const TestCard = require('./models/testCard');
 
 async function seed() {
   if (!dbConfig.mongoURI) {
@@ -22,6 +23,7 @@ async function seed() {
     FraudAlert.deleteMany({}),
     Transaction.deleteMany({}),
     Merchant.deleteMany({}),
+    TestCard.deleteMany({}),
     User.deleteMany({}),
   ]);
 
@@ -118,6 +120,65 @@ async function seed() {
     status: 'open',
   });
 
+  await TestCard.create([
+    {
+      token: 'card_tok_success_001',
+      label: 'Customer Visa Success',
+      brand: 'visa',
+      cardNumber: '4242424242424242',
+      last4: '4242',
+      expMonth: 12,
+      expYear: 2030,
+      cvv: '123',
+      balance: 1000,
+      currency: 'USD',
+      status: 'active',
+      holderName: 'Test Customer',
+    },
+    {
+      token: 'card_tok_low_balance_002',
+      label: 'Customer Mastercard Low Balance',
+      brand: 'mastercard',
+      cardNumber: '5555555555554444',
+      last4: '4444',
+      expMonth: 11,
+      expYear: 2030,
+      cvv: '456',
+      balance: 15,
+      currency: 'USD',
+      status: 'active',
+      holderName: 'Test Customer',
+    },
+    {
+      token: 'card_tok_blocked_003',
+      label: 'Blocked Test Card',
+      brand: 'visa',
+      cardNumber: '4000000000000002',
+      last4: '4000',
+      expMonth: 10,
+      expYear: 2030,
+      cvv: '321',
+      balance: 500,
+      currency: 'USD',
+      status: 'blocked',
+      holderName: 'Test Customer',
+    },
+    {
+      token: 'card_tok_expired_004',
+      label: 'Expired Test Card',
+      brand: 'amex',
+      cardNumber: '378282246310005',
+      last4: '3782',
+      expMonth: 1,
+      expYear: 2020,
+      cvv: '1234',
+      balance: 500,
+      currency: 'USD',
+      status: 'expired',
+      holderName: 'Test Customer',
+    },
+  ]);
+
   await AuditLog.create([
     {
       actorUserId: adminUser._id,
@@ -139,6 +200,20 @@ async function seed() {
       entityType: 'Transaction',
       entityId: transactionOne._id.toString(),
       details: { transactionCount: 3 },
+    },
+    {
+      actorUserId: adminUser._id,
+      action: 'seed.test_cards_created',
+      entityType: 'TestCard',
+      entityId: 'seed',
+      details: {
+        cards: [
+          'card_tok_success_001',
+          'card_tok_low_balance_002',
+          'card_tok_blocked_003',
+          'card_tok_expired_004',
+        ],
+      },
     },
   ]);
 

@@ -116,6 +116,75 @@ body {
     font-size: 14px;
   }
 
+  .test-card-panel {
+    border: 1px solid #dbe4ee;
+    border-radius: 10px;
+    background: #f8fbff;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .test-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .test-card-item {
+    padding: 10px 0;
+    border-top: 1px solid #e6edf5;
+  }
+
+  .test-card-item:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .test-card-note {
+    margin: 4px 0 0;
+    color: #475467;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .card-entry-toggle-row {
+    margin: 4px 0 10px;
+  }
+
+  .toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #1d2939;
+    cursor: pointer;
+  }
+
+  .manual-card-panel {
+    border: 1px solid #dbe4ee;
+    border-radius: 10px;
+    background: #f8fbff;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .manual-card-inline-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .manual-card-inline-grid > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .manual-card-inline-grid label {
+    margin-bottom: 6px;
+  }
+
   .transaction-status-card {
     margin-top: 20px;
     border: 1px solid #e3e7ed;
@@ -210,6 +279,10 @@ body {
     }
 
     .settings-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .manual-card-inline-grid {
       grid-template-columns: 1fr;
     }
   }
