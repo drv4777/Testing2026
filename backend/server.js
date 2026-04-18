@@ -1,4 +1,3 @@
-// Example server.js (basic structure)
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -7,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payment');
 const adminRoutes = require('./routes/admin');
 const fraudRoutes = require('./routes/fraud');
+const errorMiddleware = require('./middleware/errorMiddleware');
 const dbConfig = require('./config/db');
 require('dotenv').config();
 
@@ -27,5 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/fraud', fraudRoutes);
+
+app.use(errorMiddleware);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

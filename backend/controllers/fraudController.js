@@ -1,22 +1,36 @@
+const FraudAlert = require('../models/fraudAlert');
+
 exports.getFraudAlerts = async (req, res) => {
-    try {
-      // Simulate fraud alerts (replace with actual logic)
-      const fraudAlerts = [
-        { id: 1, transactionId: '123', reason: 'High transaction amount' },
-        { id: 2, transactionId: '456', reason: 'Unusual location' },
-      ];
-      res.json(fraudAlerts);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  try {
+    const fraudAlerts = await FraudAlert.find()
+      .sort({ createdAt: -1 })
+      .populate('transactionId', 'amount currency status createdAt')
+      .populate('userId', 'username role')
+      .populate('merchantId', 'name status')
+      .populate('resolvedBy', 'username role');
+
+    res.json(fraudAlerts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.resolveFraudAlert = async (req, res) => {
+  try {
+    const { alertId } = req.body;
+    const fraudAlert = await FraudAlert.findById(alertId);
+
+    if (!fraudAlert) {
+      return res.status(404).json({ message: 'Fraud alert not found' });
     }
-  };
-  
-  exports.resolveFraudAlert = async (req, res) => {
-    try {
-      const { alertId, resolution } = req.body;
-      // Simulate resolving fraud alert (replace with actual logic)
-      res.json({ message: `Fraud alert ${alertId} resolved with ${resolution}` });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+
+    fraudAlert.status = 'resolved';
+    fraudAlert.resolvedBy = req.userId;
+    fraudAlert.resolvedAt = new Date();
+    await fraudAlert.save();
+
+    res.json({ message: 'Fraud alert resolved successfully', fraudAlert });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

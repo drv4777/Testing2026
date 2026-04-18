@@ -4,24 +4,28 @@ const User = require('../models/user');
 
 // Register a new user
 exports.register = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, email, phone, role } = req.body;
     try {
-        // 1. Check if user already exists
-        let user = await User.findOne({ username });
-        if (user) return res.status(400).json({ error: "User already exists" });
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(400).json({ error: 'User already exists' });
 
-        // 2. Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Save to MongoDB
-        user = new User({ username, password: hashedPassword });
+        const user = new User({
+            username,
+            password: hashedPassword,
+            email,
+            phone,
+            role: role || 'customer',
+        });
+
         await user.save();
 
-        res.status(201).json({ message: "User registered successfully" });
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Registration failed" });
+        res.status(500).json({ error: 'Registration failed' });
     }
 };
 
@@ -29,19 +33,30 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { username, password } = req.body;
     try {
-        // 1. Find user
         const user = await User.findOne({ username });
-        if (!user) return res.status(400).json({ error: "Invalid credentials" });
+        if (!user) return res.status(400).json({ error: 'Invalid credentials' });
 
-        // 2. Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+        if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-        // 3. Generate JWT
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        user.lastLoginAt = new Date();
+        await user.save();
 
-        res.status(200).json({ token });
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.status(200).json({
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                role: user.role,
+            },
+        });
     } catch (error) {
-        res.status(500).json({ error: "Login failed" });
+        res.status(500).json({ error: 'Login failed' });
     }
 };

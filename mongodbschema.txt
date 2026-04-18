@@ -1,0 +1,85 @@
+MongoDB Schema Outline (Payment Gateway)
+
+Database name:
+- payment_gateway
+
+Collections:
+
+1) users
+- _id: ObjectId (PK)
+- username: String, required, unique, trimmed
+- password: String, required (bcrypt hash)
+- email: String, lowercase, trimmed
+- phone: String, trimmed
+- role: String enum ['admin', 'merchant', 'customer'], default 'customer'
+- status: String enum ['active', 'disabled'], default 'active'
+- twoFactorEnabled: Boolean, default false
+- lastLoginAt: Date
+- createdAt: Date (auto)
+- updatedAt: Date (auto)
+
+2) merchants
+- _id: ObjectId (PK)
+- name: String, required, trimmed
+- apiKey: String, required, unique, trimmed
+- ownerUserId: ObjectId ref users._id (nullable)
+- status: String enum ['active', 'disabled'], default 'active'
+- webhookUrl: String
+- settings: Mixed/Object, default {}
+- createdAt: Date (auto)
+- updatedAt: Date (auto)
+
+3) transactions
+- _id: ObjectId (PK)
+- userId: ObjectId ref users._id, required
+- merchantId: ObjectId ref merchants._id, required
+- amount: Number, required, min 0
+- currency: String, required, default 'USD', uppercase
+- paymentMethod: String, required
+- status: String enum ['pending', 'completed', 'failed', 'refunded'], default 'pending'
+- gatewayReference: String (optional)
+- failureReason: String (optional)
+- refundReason: String (optional)
+- processedAt: Date (optional)
+- createdAt: Date (auto)
+- updatedAt: Date (auto)
+
+Indexes:
+- userId (single)
+- merchantId (single)
+- status (single)
+- { userId: 1, createdAt: -1 } (compound)
+- { merchantId: 1, createdAt: -1 } (compound)
+
+4) fraudalerts (model: FraudAlert)
+- _id: ObjectId (PK)
+- transactionId: ObjectId ref transactions._id, required
+- userId: ObjectId ref users._id (nullable)
+- merchantId: ObjectId ref merchants._id (nullable)
+- reason: String, required
+- severity: String enum ['low', 'medium', 'high'], default 'medium'
+- status: String enum ['open', 'resolved'], default 'open'
+- resolvedBy: ObjectId ref users._id (nullable)
+- resolvedAt: Date (nullable)
+- createdAt: Date (auto)
+- updatedAt: Date (auto)
+
+Indexes:
+- transactionId (single)
+- severity (single)
+- status (single)
+
+5) auditlogs (model: AuditLog)
+- _id: ObjectId (PK)
+- actorUserId: ObjectId ref users._id (nullable)
+- action: String, required
+- entityType: String, required
+- entityId: String, required
+- details: Mixed/Object, default {}
+- createdAt: Date (auto)
+
+Design notes:
+- Primary relationships are reference-based (ObjectId refs), not embedded joins.
+- Transactions are the central source for payment history and analytics.
+- Merchant dropdown in frontend should query active merchants from /api/admin/merchant.
+- Status fields are constrained by enums in Mongoose models.

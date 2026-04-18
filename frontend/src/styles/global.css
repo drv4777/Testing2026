@@ -2,6 +2,7 @@ body {
     font-family: sans-serif;
     margin: 0;
     padding: 0;
+  background: #f7f8fa;
   }
   
   nav {
@@ -45,6 +46,14 @@ body {
     padding: 8px;
     border: 1px solid #ccc;
   }
+
+  form select {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+  }
   
   form button {
     background-color: #007bff;
@@ -61,4 +70,63 @@ body {
   
   li {
       margin-bottom: 5px;
+  }
+
+  .payment-page {
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .payment-panel {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border: 1px solid #e3e7ed;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
+  }
+
+  .payment-subtitle {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #475467;
+  }
+
+  .payment-form {
+    width: 100%;
+    margin: 0;
+  }
+
+  .payment-form label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1d2939;
+  }
+
+  .form-error {
+    color: #b42318;
+    margin: 4px 0 10px;
+  }
+
+  .form-hint {
+    color: #475467;
+    margin: 4px 0 10px;
+    font-size: 14px;
+  }
+
+  .transaction-status-card {
+    margin-top: 20px;
+    border: 1px solid #e3e7ed;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fbfdff;
+  }
+
+  @media (max-width: 640px) {
+    .payment-panel {
+      padding: 16px;
+      border-radius: 10px;
+    }
   }

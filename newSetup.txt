@@ -1,0 +1,65 @@
+Payment Gateway - Updated Setup Steps (MongoDB + Docker)
+
+1. Prerequisites
+- Install Docker Desktop.
+- Make sure Docker Desktop is running.
+
+2. First-time project startup
+- Open a terminal in the project root.
+- Run:
+	docker-compose up --build -d
+
+3. Seed the MongoDB data
+- After containers are running, seed sample data into MongoDB:
+	docker-compose exec backend npm run seed
+
+Notes:
+- The seed script clears existing data in users, merchants, transactions, fraudalerts, and auditlogs before inserting sample data.
+- Seeded user password is: Password123!
+
+4. Verify backend and frontend
+- Frontend: http://localhost:3000
+- Backend API base: http://localhost:5000/api
+
+5. View data in MongoDB Compass
+- Connect using:
+	mongodb://localhost:27017/payment_gateway
+- Refresh and check collections:
+	users, merchants, transactions, fraudalerts, auditlogs
+
+6. Day-to-day startup (after first build)
+- Start existing containers without rebuild:
+	docker-compose up -d
+
+7. When to rebuild
+- Rebuild only if Dockerfiles, dependencies, or build-relevant files changed:
+	docker-compose up --build -d
+
+8. Stop the project
+- Stop and remove running containers:
+	docker-compose down
+
+9. Common troubleshooting
+- If seeded data is missing:
+	1) Re-run: docker-compose exec backend npm run seed
+	2) Confirm Compass is connected to mongodb://localhost:27017/payment_gateway
+	3) Refresh database/collections in Compass
+
+- If backend cannot connect to MongoDB:
+	1) Check containers are up: docker-compose ps
+	2) Restart stack: docker-compose down ; docker-compose up -d
+
+If you want to run front-end on your machine, stop the front-end container in Docker Desktop, 
+and navigate to your frontend folder, run npm install, and then npm start.
+
+
+Some test accounts are:
+
+customer1
+password: Password123!
+
+merchant_owner
+password: Password123!
+
+admin
+password: Password123!
